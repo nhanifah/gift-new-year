@@ -1,0 +1,14 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "gift-new-year",
+	"main": "./workers/app.ts",
+	"compatibility_date": "2025-10-08",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": {
+		"enabled": true
+	},
+	"upload_source_maps": true,
+	"vars": {
+		"VALUE_FROM_CLOUDFLARE": "Makan nasi lauknya itik, Minumnya es kelapa muda. Kado Alif isinya irit, Cukup buat beli seblak aja."
+	}
+}

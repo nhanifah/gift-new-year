@@ -1,90 +1,312 @@
-import logoDark from "./logo-dark.svg";
-import logoLight from "./logo-light.svg";
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Gift, Copy, Check, Sparkles, Volume2, VolumeX, Scissors } from 'lucide-react';
 
-export function Welcome({ message }: { message: string }) {
-	return (
-		<main className="flex items-center justify-center pt-16 pb-4">
-			<div className="flex-1 flex flex-col items-center gap-16 min-h-0">
-				<header className="flex flex-col items-center gap-9">
-					<div className="w-[500px] max-w-[100vw] p-4">
-						<img
-							src={logoLight}
-							alt="React Router"
-							className="block w-full dark:hidden"
-						/>
-						<img
-							src={logoDark}
-							alt="React Router"
-							className="hidden w-full dark:block"
-						/>
-					</div>
-				</header>
-				<div className="max-w-[300px] w-full space-y-6 px-4">
-					<nav className="rounded-3xl border border-gray-200 p-6 dark:border-gray-700 space-y-4">
-						<p className="leading-6 text-gray-700 dark:text-gray-200 text-center">
-							What&apos;s next?
-						</p>
-						<ul>
-							{resources.map(({ href, text, icon }) => (
-								<li key={href}>
-									<a
-										className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-										href={href}
-										target="_blank"
-										rel="noreferrer"
-									>
-										{icon}
-										{text}
-									</a>
-								</li>
-							))}
-							<li className="self-stretch p-3 leading-normal">{message}</li>
-						</ul>
-					</nav>
-				</div>
-			</div>
-		</main>
-	);
+// URL Audio Terompet/Perayaan (Short sound effect)
+const TRUMPET_SOUND_URL = "https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3?filename=tada-fanfare-a-6313.mp3";
+
+// --- Custom Styles untuk Font & Texture ---
+const GlobalStyles = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Courier+Prime:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+    
+    .font-hand { font-family: 'Caveat', cursive; }
+    .font-typewriter { font-family: 'Courier Prime', monospace; }
+    .font-serif-display { font-family: 'Playfair Display', serif; }
+
+    /* Paper Texture Effect */
+    .bg-paper-texture {
+      background-color: #fdfbf7;
+      background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+    }
+    
+    .bg-card-texture {
+      background-color: #fffefb;
+      background-image: url("https://www.transparenttextures.com/patterns/sketch-pad.png");
+    }
+
+    /* Jagged Edge / Torn Paper Effect using CSS mask */
+    .torn-edge-bottom {
+      mask-image: linear-gradient(to bottom, transparent 50%, black 50%),
+        linear-gradient(to bottom right, transparent 50%, black 50%),
+        linear-gradient(to bottom left, transparent 50%, black 50%);
+      mask-size: 100% 20px;
+      mask-position: bottom;
+      mask-repeat: repeat-x;
+    }
+    
+    .shadow-layered {
+      box-shadow: 
+        0 1px 1px rgba(0,0,0,0.05), 
+        0 10px 0 -5px #eee, 
+        0 10px 1px -4px rgba(0,0,0,0.05),
+        0 20px 0 -10px #e5e5e5,
+        0 20px 1px -9px rgba(0,0,0,0.05);
+    }
+  `}</style>
+);
+
+export function Welcome() {
+	const [isOpened, setIsOpened] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  
+  // Ref untuk Audio
+  const audioRef = useRef(null);
+
+  // Load Canvas Confetti dari CDN secara dinamis
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    // Setup Audio
+    audioRef.current = new Audio(TRUMPET_SOUND_URL);
+    audioRef.current.volume = 0.5;
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  const triggerConfetti = () => {
+    if (window.confetti) {
+      // Ledakan Utama - Emas & Merah Elegan
+      window.confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#D4AF37', '#8B0000', '#F5F5DC', '#2F4F4F'],
+        zIndex: 9999,
+        scalar: 1.2
+      });
+    }
+  };
+
+  const handleOpenGift = () => {
+    setIsOpened(true);
+    triggerConfetti();
+    
+    if (audioEnabled && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch((e) => console.log("Audio play failed (user interaction needed):", e));
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-paper-texture flex items-center justify-center p-6 relative overflow-hidden text-slate-800">
+      <GlobalStyles />
+
+      {/* Background Elements (Polaroids scattered) */}
+      <div className="absolute top-10 left-10 w-32 h-40 bg-white shadow-md rotate-[-12deg] p-2 opacity-40 hidden md:block">
+        <div className="w-full h-24 bg-slate-200 mb-2"></div>
+        <div className="h-2 w-16 bg-slate-200 rounded"></div>
+      </div>
+      <div className="absolute bottom-20 right-10 w-40 h-32 bg-white shadow-md rotate-[8deg] p-2 opacity-40 hidden md:block">
+         <div className="w-full h-full border-2 border-dashed border-slate-300"></div>
+      </div>
+
+      {/* Audio Toggle (Styled as a sticker) */}
+      <button 
+        onClick={() => setAudioEnabled(!audioEnabled)}
+        className="absolute top-6 right-6 z-50 p-3 bg-white shadow-md rounded-full border-2 border-slate-100 hover:scale-110 transition-transform rotate-6"
+      >
+        {audioEnabled ? <Volume2 size={20} className="text-slate-600" /> : <VolumeX size={20} className="text-slate-400" />}
+      </button>
+
+      <div className="relative z-10 w-full max-w-md perspective-1000">
+        <AnimatePresence mode='wait'>
+          {!isOpened ? (
+            <InitialState key="initial" onOpen={handleOpenGift} />
+          ) : (
+            <VoucherState key="voucher" />
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="absolute bottom-6 text-center w-full font-typewriter text-slate-400 text-xs tracking-widest">
+        DRAFT_NO_2026 // HANDCRAFTED
+      </div>
+    </div>
+  );
 }
 
-const resources = [
-	{
-		href: "https://reactrouter.com/docs",
-		text: "React Router Docs",
-		icon: (
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="24"
-				height="20"
-				viewBox="0 0 20 20"
-				fill="none"
-				className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-			>
-				<path
-					d="M9.99981 10.0751V9.99992M17.4688 17.4688C15.889 19.0485 11.2645 16.9853 7.13958 12.8604C3.01467 8.73546 0.951405 4.11091 2.53116 2.53116C4.11091 0.951405 8.73546 3.01467 12.8604 7.13958C16.9853 11.2645 19.0485 15.889 17.4688 17.4688ZM2.53132 17.4688C0.951566 15.8891 3.01483 11.2645 7.13974 7.13963C11.2647 3.01471 15.8892 0.951453 17.469 2.53121C19.0487 4.11096 16.9854 8.73551 12.8605 12.8604C8.73562 16.9853 4.11107 19.0486 2.53132 17.4688Z"
-					strokeWidth="1.5"
-					strokeLinecap="round"
-				/>
-			</svg>
-		),
-	},
-	{
-		href: "https://rmx.as/discord",
-		text: "Join Discord",
-		icon: (
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="24"
-				height="20"
-				viewBox="0 0 24 20"
-				fill="none"
-				className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-			>
-				<path
-					d="M15.0686 1.25995L14.5477 1.17423L14.2913 1.63578C14.1754 1.84439 14.0545 2.08275 13.9422 2.31963C12.6461 2.16488 11.3406 2.16505 10.0445 2.32014C9.92822 2.08178 9.80478 1.84975 9.67412 1.62413L9.41449 1.17584L8.90333 1.25995C7.33547 1.51794 5.80717 1.99419 4.37748 2.66939L4.19 2.75793L4.07461 2.93019C1.23864 7.16437 0.46302 11.3053 0.838165 15.3924L0.868838 15.7266L1.13844 15.9264C2.81818 17.1714 4.68053 18.1233 6.68582 18.719L7.18892 18.8684L7.50166 18.4469C7.96179 17.8268 8.36504 17.1824 8.709 16.4944L8.71099 16.4904C10.8645 17.0471 13.128 17.0485 15.2821 16.4947C15.6261 17.1826 16.0293 17.8269 16.4892 18.4469L16.805 18.8725L17.3116 18.717C19.3056 18.105 21.1876 17.1751 22.8559 15.9238L23.1224 15.724L23.1528 15.3923C23.5873 10.6524 22.3579 6.53306 19.8947 2.90714L19.7759 2.73227L19.5833 2.64518C18.1437 1.99439 16.6386 1.51826 15.0686 1.25995ZM16.6074 10.7755L16.6074 10.7756C16.5934 11.6409 16.0212 12.1444 15.4783 12.1444C14.9297 12.1444 14.3493 11.6173 14.3493 10.7877C14.3493 9.94885 14.9378 9.41192 15.4783 9.41192C16.0471 9.41192 16.6209 9.93851 16.6074 10.7755ZM8.49373 12.1444C7.94513 12.1444 7.36471 11.6173 7.36471 10.7877C7.36471 9.94885 7.95323 9.41192 8.49373 9.41192C9.06038 9.41192 9.63892 9.93712 9.6417 10.7815C9.62517 11.6239 9.05462 12.1444 8.49373 12.1444Z"
-					strokeWidth="1.5"
-				/>
-			</svg>
-		),
-	},
-];
+// --- VIEW 1: State Awal (Amplop Vintage) ---
+function InitialState({ onOpen }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50, rotateX: 20 }}
+      animate={{ opacity: 1, y: 0, rotateX: 0 }}
+      exit={{ opacity: 0, scale: 0.9, rotate: -5 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="bg-card-texture p-1 rounded-sm shadow-xl relative transform rotate-1 border border-slate-200"
+    >
+      {/* Washi Tape Top */}
+      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-32 h-10 bg-yellow-200/80 rotate-1 shadow-sm backdrop-blur-[1px]" style={{clipPath: "polygon(0% 10%, 100% 0%, 98% 100%, 2% 90%)"}}></div>
+
+      <div className="bg-white/50 p-8 border border-slate-100 h-full flex flex-col items-center text-center relative overflow-hidden">
+        {/* Stamp Effect */}
+        <div className="absolute top-4 right-4 border-2 border-red-800/30 text-red-800/30 rounded-full w-20 h-20 flex items-center justify-center rotate-[-25deg] pointer-events-none">
+          <span className="font-typewriter text-[10px] font-bold uppercase text-center leading-tight">Post<br/>Office<br/>2026</span>
+        </div>
+
+        <div className="space-y-4 mb-8 mt-4 relative z-10">
+          <motion.div 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="inline-block px-4 py-1 bg-slate-800 text-white font-typewriter text-xs tracking-[0.2em] mb-2"
+          >
+            CONFIDENTIAL
+          </motion.div>
+          
+          <h1 className="text-5xl font-serif-display text-slate-800 leading-tight">
+            Happy <br/><span className="italic text-red-700">New Year</span>
+          </h1>
+          
+          <div className="w-16 h-1 bg-red-700 mx-auto my-4 rounded-full opacity-80"></div>
+
+          {/* Handwritten Note */}
+          <div className="font-hand text-2xl text-slate-600 leading-relaxed -rotate-1 transform mt-2 relative">
+            <span className="absolute -left-4 -top-4 text-4xl text-slate-300">"</span>
+            Makan nasi lauknya itik,<br/>
+            Minumnya es kelapa muda.<br/>
+            Kado Alif isinya irit,<br/>
+            Cukup buat beli seblak aja.
+            <span className="absolute -bottom-8 -right-2 text-4xl text-slate-300">"</span>
+          </div>
+        </div>
+
+        {/* Interactive Wax Seal / Button */}
+        <div className="relative mt-2 mb-6">
+           <motion.button
+            onClick={onOpen}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative z-10 group"
+          >
+            <div className="relative">
+              <Gift size={80} className="text-red-800 drop-shadow-md" strokeWidth={1} />
+              {/* String tie */}
+              <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-900/40 -z-10"></div>
+              <div className="absolute top-0 left-1/2 h-full w-[2px] bg-red-900/40 -z-10"></div>
+            </div>
+            
+            <motion.div 
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-max font-hand text-xl text-slate-500 font-bold"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              ( Buka Disini )
+            </motion.div>
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// --- VIEW 2: State Akhir (Voucher / Letter) ---
+function VoucherState() {
+  const [copied, setCopied] = useState(false);
+  const voucherCode = "72737449";
+
+  const handleCopy = () => {
+    // Fallback safe copy
+    const textArea = document.createElement("textarea");
+    textArea.value = voucherCode;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+    document.body.removeChild(textArea);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8, y: 50 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 120, damping: 20 }}
+      className="bg-paper-texture max-w-sm mx-auto shadow-2xl relative"
+      style={{
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+      }}
+    >
+      {/* Torn Edge Top */}
+      <div className="h-4 w-full bg-[#2c3e50]" style={{
+         maskImage: "linear-gradient(45deg, transparent 50%, black 50%), linear-gradient(-45deg, transparent 50%, black 50%)",
+         maskSize: "15px 15px",
+         maskRepeat: "repeat-x",
+         maskPosition: "bottom"
+      }}></div>
+
+      <div className="p-8 border-x border-slate-200/50">
+        
+        {/* Header Elegant */}
+        <div className="text-center mb-8 border-b-2 border-double border-slate-200 pb-6">
+           <div className="flex justify-center mb-4 text-yellow-600">
+             <Sparkles size={32} strokeWidth={1.5} />
+           </div>
+           <h2 className="font-serif-display text-3xl font-bold text-slate-800 mb-2">Voucher Eksklusif</h2>
+           <p className="font-typewriter text-xs text-slate-500 tracking-widest uppercase">Edisi Tahun Baru 2026</p>
+        </div>
+
+        {/* Voucher Cutout Area */}
+        <div className="relative bg-white border-2 border-dashed border-slate-300 p-6 rounded-sm mb-8 group">
+           {/* Scissors Icon */}
+           <div className="absolute -top-3 -right-3 bg-paper-texture p-1 text-slate-400 rotate-90">
+             <Scissors size={16} />
+           </div>
+
+           <p className="text-center font-hand text-xl text-slate-500 mb-2">Kode THR Anda:</p>
+           
+           <div className="flex flex-col items-center gap-4">
+             <div className="bg-slate-100 px-6 py-3 rounded-sm border border-slate-200 shadow-inner w-full text-center">
+                <code className="font-typewriter text-3xl font-bold text-slate-800 tracking-wider block">
+                  {voucherCode}
+                </code>
+             </div>
+             
+             <button 
+                onClick={handleCopy}
+                className="flex items-center gap-2 px-5 py-2 bg-slate-800 text-white font-typewriter text-sm hover:bg-slate-700 transition-colors shadow-lg active:translate-y-1 w-full justify-center"
+              >
+                {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+                {copied ? "TERSALIN" : "SALIN KODE"}
+              </button>
+           </div>
+        </div>
+
+        {/* Instructions - Typewriter style */}
+        <div className="space-y-4">
+           <h3 className="font-serif-display text-lg font-bold text-slate-800 border-l-4 border-red-700 pl-3">
+             Instruksi Pencairan
+           </h3>
+           <ol className="list-decimal list-inside font-typewriter text-xs text-slate-600 space-y-3 leading-relaxed">
+             <li className="pl-2"><strong className="text-slate-800">Buka myBCA</strong> di smartphone Anda.</li>
+             <li className="pl-2">Pilih menu <strong className="text-slate-800">Transfer</strong> &gt; <strong className="text-slate-800">BagiBagi</strong> &gt; <strong className="text-slate-800">Klaim kode BagiBagi</strong>.</li>
+             <li className="pl-2">Tempel kode di atas untuk klaim.</li>
+           </ol>
+        </div>
+
+      </div>
+
+      {/* Footer Torn Edge */}
+      <div className="h-6 w-full bg-slate-100 torn-edge-bottom opacity-50"></div>
+      
+      {/* Footer Note */}
+      <div className="bg-slate-800 text-slate-300 p-4 text-center font-typewriter text-[10px] tracking-widest">
+         VALID UNTIL: JAN 2, 2026
+      </div>
+    </motion.div>
+  );
+}
